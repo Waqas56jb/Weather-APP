@@ -3,43 +3,38 @@
 # Exit immediately if any command fails
 set -e
 
-# 1. Remove default nginx page (if exists)
-echo "Removing default nginx page..."
-sudo rm -f /var/www/html/index.nginx-debian.html || echo "No default nginx page found"
+# 1. Remove the default NGINX welcome page if it exists
+echo "Removing default NGINX welcome page..."
+sudo rm -f /var/www/html/index.nginx-debian.html || echo "No default welcome page to remove"
 
-# 2. Download your updated weather app code from GitHub
-echo "Downloading weather app from GitHub..."
-wget -q --show-progress -O /tmp/weather.zip https://github.com/muhammadsohaib56/weather-forecast-web/archive/refs/heads/main.zip || {
-    echo "Failed to download from GitHub"
+# 2. Clone your own GitHub repo (if not already cloned)
+echo "Cloning your GitHub repo..."
+cd /tmp
+rm -rf Weather-APP
+git clone https://github.com/Waqas56jb/Weather-APP.git || {
+    echo "Git clone failed"
     exit 1
 }
 
-# 3. Unzip the downloaded code
-echo "Unzipping weather app..."
-unzip -q -o /tmp/weather.zip -d /tmp/ || {
-    echo "Failed to unzip weather app"
+# 3. Copy index.html to NGINX web root
+echo "Copying index.html to /var/www/html..."
+sudo cp /tmp/Weather-APP/index.html /var/www/html/ || {
+    echo "Copy failed"
     exit 1
 }
 
-# 4. Copy your app files into the Nginx root directory
-echo "Copying files to web root..."
-sudo cp -r /tmp/weather-forecast-web-main/* /var/www/html/ || {
-    echo "Failed to copy files to web root"
-    exit 1
-}
-
-# 5. Set correct permissions for the web server
-echo "Setting permissions..."
+# 4. Set correct permissions
+echo "Setting permissions for /var/www/html..."
 sudo chown -R www-data:www-data /var/www/html || {
-    echo "Failed to set permissions"
+    echo "Permission setting failed"
     exit 1
 }
 
-# 6. Reload nginx to apply changes
-echo "Reloading nginx..."
+# 5. Reload NGINX to apply changes
+echo "Reloading NGINX..."
 sudo systemctl reload nginx || {
-    echo "Failed to reload nginx"
+    echo "NGINX reload failed"
     exit 1
 }
 
-echo "Deployment completed successfully!"
+echo "✅ Deployment completed successfully!"
